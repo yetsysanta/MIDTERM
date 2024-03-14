@@ -1,0 +1,152 @@
+---
+title: "Midterm"
+author: "Yetsy Santa"
+date: "03-14-2024"
+output: html_document
+---
+
+
+library(ggplot2)
+library(tidyverse)
+library(viridis)  
+
+brfss22[1:10,1:6]
+attach(brfss22)
+summary(brfss22)
+
+---  
+Question 1:
+
+  Questions: Is there relationship between marijuana usage with Age?  
+             Is there a statistical significant difference in the number of marijuana usage days between those who are at age 32 or age 52?
+  
+  Level of significance: 0.05
+
+  Null hypothesis: There is no relationship between marijuana usage and Age.
+  
+  standard deviation: N=13 , mean= 
+    df=12
+  Standard Error: 
+  
+  95% confidence interval
+  p= 2.179
+  
+```{r}
+{r eval=FALSE}
+   xtabs(~ use_marijan + Age_midpt)  
+```
+
+
+brfss22$Age_midpt <- fct_recode(brfss22$X_AGEG5YR, "21" = "Age 18 to 24",
+                                "27" = "Age 25 to 29", "32" = "Age 30 to 34",
+                                "37" = "Age 35 to 39", "42" = "Age 40 to 44",
+                                "47" = "Age 45 to 49", "52" = "Age 50 to 54",
+                                "57" = "Age 55 to 59", "62" = "Age 60 to 64",
+                                "67" = "Age 65 to 69", "72" = "Age 70 to 74",
+                                "77" = "Age 75 to 79", "82" = "Age 80 or older",
+                                NULL = "Dont know/Refused/Missing")
+brfss22$Age_midpt <- as.numeric(levels(brfss22$Age_midpt))[brfss22$Age_midpt]  
+
+brfss22$use_marijan <- fct_recode(brfss22$marijan1, 
+                                  "0" = "zero days", 
+                                  "1" = "use more than one day")
+brfss22$use_marijan <- as.numeric(levels(brfss22$use_marijan))[brfss22$use_marijan]
+
+
+
+---
+
+  Question 2:
+
+  Questions: 
+              Is there relationship between marijuana usage with educational                 level?  
+              
+              Is there a statistical significant difference in marijuana usage               between those who reported "Grades 9 through 11 (Some high                     school)" and those who reported "College 1 year to 3 years (Some               college or technical school)"?
+
+Null hypothesis: There is no relationship between marijuana usage and educational level.
+
+ 
+```{r}
+{r eval=FALSE}
+educ_shortlabel <- fct_recode(EDUCA, "never" = "Never attended school or only kindergarten",
+                    "elementary" = "Grades 1 through 8 (Elementary)", 
+                    "some hs" = "Grades 9 through 11 (Some high school)",
+                    "hs" = "Grade 12 or GED (High school graduate)",
+                    "some coll" = "College 1 year to 3 years (Some college or technical school)",
+                    "degree" = "College 4 years or more (College graduate)",
+                    "Refused" = "Refused")
+
+xtabs(~ use_marijan + educ_shortlabel)
+```
+   
+``` {r}
+library(stats)
+```
+
+``` {r}
+sub_data_some_hs <- subset(brfss22, EDUCA == "Grades 9 through 11 (Some high school)" & !is.na(MARIJAN1))
+sub_data_some_coll <- subset(brfss22, EDUCA == "College 1 year to 3 years (Some college or technical school)" & !is.na(MARIJAN1))
+```
+
+``` {r}
+anova_result <- aov(MARIJAN1 ~ EDUCA, data = brfss22)
+summary(anova_result)
+```
+The data shows that p< 2e-16 which is less than the level of significance of 5%. Therefore, we reject the null hypothesis. This means that there is a significant difference marijuana usage with educational levels.
+  
+---
+Question 3:
+
+How marijuana use correlates with education?
+
+```{r}
+NN <- length(brfss22$EDUCA)
+set.seed(12345)
+restrict_1 <- (runif(NN) < 0.1) # use just 10% 
+summary(restrict_1)
+```
+
+```{r}
+brfss_small <- subset(brfss22, restrict_1)
+```
+
+
+
+```{r}
+ggplot(brfss_small, aes(x = MARIJAN1, fill = EDUCA)) + geom_bar()
+```
+
+```{r}
+ggplot(brfss_small, aes(x = EDUCA, fill = MARIJAN1)) + geom_bar()
+```
+  
+
+
+
+  
+  
+```{r}
+brfss_small_hs <- subset(brfss_small,brfss_small$EDUCA == "Grades 9 through 11 (Some high school)")
+brfss_small_coll <- subset(brfss_small,brfss_small$EDUCA == "College 1 year to 3 years (Some college or technical school)")
+```
+
+```{r}
+ggplot(brfss_small_hs, aes(x = MARIJAN1, fill = EDUCA)) + geom_bar(position = "fill") + scale_fill_viridis_d(option="rocket")
+```
+
+  
+X1 <- standardize_varb_to01(brfss22$EDUCA)
+X2 <- standardize_varb_to01(brfss22$MARIJAN)
+X3 <- brfss22$EDUCA_recode
+X4 <- brfss22$MARIJAN_recode
+# you could add more X variables...
+Y <- brfss22$MARIJAN_recode
+
+
+
+
+
+
+
+
+
